@@ -1,14 +1,13 @@
-
 # Please replace the URL and the URL in Source0
 # with correct project URLs
 # and of course others
-Name:           MyDocs-docs
-Version:        1
-Release:        1
+Name:           $project_name-docs
+Version:        $project_version
+Release:        $project_release
 Summary:        Documentation and Samples for a project
 License:        LGPLv2+
-URL:            http://www.MyDocs.org
-Source0:        http://MyDocs.org/%{name}-%{version}-%{release}.tgz
+URL:            http://www.$project_name.org
+Source0:        http://$project_name.org/%{name}-%{version}-%{release}.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 Group:          Documentation
@@ -35,3 +34,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %{_defaultdocdir}/%{name}
+
+%changelog
