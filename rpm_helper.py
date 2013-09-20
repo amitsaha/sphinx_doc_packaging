@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-# This is a best guess SPEC file generator for a RPM package
-# Specifically look whether the project_name and the docs directory
-# are the same.
-# It also creates a .tgz of the docs directory
+'''
+This script does two things:
+
+1. Generates a best guess SPEC file generator for a RPM package
+2. It also creates a .tgz of the docs directory
+'''
 
 from string import Template
 import argparse
@@ -11,26 +13,7 @@ import os
 import imp
 import sys
 import tarfile
-
-# TODO use argparse and put some sanity in the argument parsing
-
-if len(sys.argv)==1:
-    print 'Please specify the docs directory'
-    sys.exit(1)
-
-docs_dir = sys.argv[1]
-
-#if len(sys.argv) > 2:
-#    rpm_gendir = sys.argv[2]
-#else:
-
-rpm_gendir = 'output'
-if not os.path.exists(os.path.abspath(rpm_gendir)):
-    os.mkdir(rpm_gendir)
-
-# load conf.py
-config = imp.load_source('conf.py',
-                         os.path.abspath('{0}/conf.py'.format(docs_dir)))
+from optparse import OptionParser
 
 spec_template = Template('''
 # Please replace the URL and the URL in Source0
@@ -72,22 +55,61 @@ rm -rf $RPM_BUILD_ROOT
 '''
 )
 
-# write the spec file
-# use safe_substitute since we have $strings which are not
-# to be substituted
-spec_file= spec_template.safe_substitute(project_name=config.project,
-                                         project_version=config.version,
-                                         project_release=config.release)
-spec_file_name = '{0}_generated.spec'.format(config.project)
-with open(os.path.join(os.path.abspath(rpm_gendir),spec_file_name),'w') as f:
-    f.write(spec_file)
+def genspec(config, output):
+    # write the spec file
+    # use safe_substitute since we have $strings which are not
+    # to be substituted
+    spec_file= spec_template.safe_substitute(project_name=config.project,
+                                             project_version=config.version,
+                                             project_release=config.release)
+    spec_file_name = '{0}_generated.spec'.format(config.project)
+    with open(os.path.join(os.path.abspath(output),spec_file_name),'w') as f:
+        f.write(spec_file)
 
-print 'Created SPEC file: {0}'.format(spec_file_name)
-# create a tgz file from the supplied docs directory
-# The .tgz will extract to a directory such that it
-# matches the project name
-tgz_file = '{0}-docs-{1}-{2}.tgz'.format(config.project, config.version, config.release)
-extract_dest = '{0}-docs-{1}-{2}'.format(config.project, config.version, config.release)
-with tarfile.open(os.path.join(os.path.abspath(rpm_gendir), tgz_file), "w:gz") as tar:
+    print 'Created SPEC file: {0}'.format(spec_file_name)
+
+def gentgz(config, docs_dir, output):
+    # create a tgz file from the supplied docs directory
+    # The .tgz will extract to a directory such that it
+    # matches the project name
+    tgz_file = '{0}-docs-{1}-{2}.tgz'.format(config.project, config.version, config.release)
+    extract_dest = '{0}-docs-{1}-{2}'.format(config.project, config.version, config.release)
+    with tarfile.open(os.path.join(os.path.abspath(output), tgz_file), "w:gz") as tar:
         tar.add(docs_dir, arcname=extract_dest)
-print 'Created archive: {0}'.format(tgz_file)
+        print 'Created archive: {0}'.format(tgz_file)
+
+
+def main(docs_dir, output):
+    if not os.path.exists(os.path.abspath(output)):
+        os.mkdir(output)
+
+    # if the conf.py uses the modules which are hopefully
+    # one level up
+    orig = sys.path
+    sys.path.append(os.path.split(docs_dir.rstrip('/'))[0])
+    # load conf.py
+    try:
+        config = imp.load_source('conf.py',
+                                 os.path.abspath('{0}/conf.py'.format(docs_dir)))
+    except IOError: # file not found
+        # try in docs_dir/src (SymPy for eg.)
+        config = imp.load_source('conf.py',
+                                 os.path.abspath('{0}/src/conf.py'.format(docs_dir)))
+
+    genspec(config,output)
+    gentgz(config, docs_dir, output)
+    sys.path = orig
+
+if __name__ == '__main__':
+    usage = "usage: %prog docs_dir [-o output_dir]"
+    parser = OptionParser(usage=usage)
+    parser.add_option("-o", "--output", dest="output_dir",
+                      default="output",
+                      help="Ouptut directory")
+
+    (options, args) = parser.parse_args()
+    if not args:
+        parser.print_help()
+        sys.exit(1)
+
+    main(args[0], options.output_dir)
