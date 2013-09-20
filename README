@@ -1,0 +1,5 @@
+Generic SPEC file to package a Sphinx doc directory as an RPM
+package. The HTML files are installed in /usr/share/doc/<your-package-name>.
+
+Also includes a basic script to  generate the SPEC file and create a
+.tgz of your docs directory.
