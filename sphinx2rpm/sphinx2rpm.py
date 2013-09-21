@@ -6,13 +6,13 @@ This script does two things:
 1. Generates a best guess SPEC file generator for the RPM package
 2. It creates a .tgz of the docs directory supplied
 """
-
 from __future__ import print_function, unicode_literals
-from string import Template
+
 import os
 import sys
 import tarfile
 from optparse import OptionParser
+from string import Template
 
 
 class Spec:
