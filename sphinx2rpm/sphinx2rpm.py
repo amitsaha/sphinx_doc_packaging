@@ -25,9 +25,7 @@ class Spec:
         self.output_dir = output_dir
 
     def genspec(self, config):
-        # use safe_substitute since we have $strings which are not
-        # to be substituted
-        self.spec_file = self.spec_template.safe_substitute(
+        self.spec_file = self.spec_template.substitute(
             project_name=config['project'],
             project_version=config['version'],
             project_release=config['release'])

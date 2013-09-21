@@ -1,6 +1,9 @@
+"""
+Unit tests
+"""
+
 from __future__ import unicode_literals
 import unittest
-import os
 import io
 from string import Template
 from sphinx2rpm import Spec, Archive
@@ -16,18 +19,26 @@ class TestSphinx2Rpm(unittest.TestCase):
 
     def test_genspec(self):
 
+        """
+        Test for generating spec file
+        """
+
         spec = Spec()
         spec.genspec(self.config)
 
         with open('template.spec') as f:
             spec_template = Template(f.read())
 
-        self.assertEquals(spec.spec_file, spec_template.safe_substitute
-                          (project_name=self.config['project'],
-                           project_version=self.config['version'],
-                           project_release=self.config['release']))
+        with open('expected_spec.spec') as f:
+            expected_specfile = f.read()
+
+        self.assertEquals(spec.spec_file, expected_specfile)
 
     def test_writespec(self):
+        """
+        Test for writing a spec file
+        """
+
         #XXX: look into mock
         spec = Spec()
         spec.genspec(self.config)
@@ -36,6 +47,10 @@ class TestSphinx2Rpm(unittest.TestCase):
         self.assertEquals(spec.spec_file, f.getvalue())
 
     def test_gen_tgz_info(self):
+
+        """
+        test for the tgz info
+        """
 
         archive = Archive()
         archive.gen_tgz_info(self.config)
