@@ -35,7 +35,9 @@ directory::
 Example
 ~~~~~~~
 
-::
+Here is an example to use sphinx2rpm.py from the git clone::
+
+
     $ ./sphinx2rpm.py ../sample_mydocs -p mydocs -v 1 -r 0
     Created files in /tmp/sphinx2rpm
 
