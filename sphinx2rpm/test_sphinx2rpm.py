@@ -26,9 +26,6 @@ class TestSphinx2Rpm(unittest.TestCase):
         spec = Spec()
         spec.genspec(self.config)
 
-        with open('template.spec') as f:
-            spec_template = Template(f.read())
-
         with open('expected_spec.spec') as f:
             expected_specfile = f.read()
 
